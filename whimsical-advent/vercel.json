@@ -1,12 +1,14 @@
 {
+  "version": 2,
+  "functions": {
+    "api/send-daily-email.ts": {
+      "maxDuration": 30
+    }
+  },
   "crons": [
     {
       "path": "/api/send-daily-email",
       "schedule": "0 9 * * *"
     }
-  ],
-  "functions": {
-    "api/send-daily-email.ts": {
-    }
-  }
+  ]
 }
