@@ -1,0 +1,13 @@
+{
+  "crons": [
+    {
+      "path": "/api/send-daily-email",
+      "schedule": "0 9 * * *"
+    }
+  ],
+  "functions": {
+    "api/send-daily-email.ts": {
+      "runtime": "nodejs20.x"
+    }
+  }
+}
