@@ -10,7 +10,7 @@ export const config = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:295484239170:web:33e8e060e22e2fa0acacdb",
   },
   email: {
-    resendApiKey: import.meta.env.VITE_RESEND_API_KEY || "G-QKQE827J34",
+    resendApiKey: import.meta.env.VITE_RESEND_API_KEY || "re_i75z967C_4nYXPoceQhRs8GppUaCXWYYg",
     recipientEmail: import.meta.env.RECIPIENT_EMAIL || "aleksandarmiloseski96@gmail.com",
   },
 };
