@@ -98,7 +98,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const emailHtml = generateEmailHtml(currentDay, qrCodeDataUrl, dayData.message);
 
     const { data, error } = await resend.emails.send({
-      from: 'December Quest <quest@yourdomain.com>',
+      from: 'December Quest <onboarding@resend.dev>',
       to: recipientEmail,
       subject: `🌟 Your December ${currentDay} Magical Quest Awaits!`,
       html: emailHtml,

@@ -122,7 +122,7 @@ export const sendDailyAdventEmail = async (emailData: EmailData) => {
     `;
 
     const { data, error } = await resend.emails.send({
-      from: 'December Quest <quest@yourdomain.com>', // You'll need to configure this in Resend
+      from: 'December Quest <onboarding@resend.dev>', // Using Resend's verified domain for testing
       to: recipientEmail,
       subject: `🌟 Your December ${day} Magical Quest Awaits!`,
       html: emailHtml,
