@@ -94,7 +94,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Get current date or use test day
     const now = new Date();
-    const currentMonth = now.getMonth() + 1; // JavaScript months are 0-indexed
+    const currentMonth = now.getMonth() + 1; 
     const actualDay = now.getDate();
     const currentDay = testDay || actualDay;
 
