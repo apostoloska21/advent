@@ -1,6 +1,6 @@
-// Static data-based operations (no database)
+// JSON-based operations (direct import from data.json)
 
-import { adventDaysData } from '@/data/seedData';
+import adventDaysData from '@/assets/data.json';
 
 export interface AdventDay {
   day: number;
@@ -8,7 +8,7 @@ export interface AdventDay {
   clue: string;
 }
 
-// Days operations using static data
+// Days operations using JSON data
 export const getDay = async (dayId: number): Promise<AdventDay | null> => {
   const day = adventDaysData.find(d => d.day === dayId);
   return day || null;
@@ -22,7 +22,7 @@ export const getAllDays = async (): Promise<AdventDay[]> => {
   return adventDaysData;
 };
 
-// No database initialization needed
+// No initialization needed
 export const initializeDatabase = async () => {
-  console.log('📊 Using static data - no database needed');
+  console.log('📄 Using JSON data - no API calls needed');
 };

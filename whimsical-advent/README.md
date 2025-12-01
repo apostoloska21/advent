@@ -49,26 +49,46 @@ npm install
 
 No database setup required! The advent calendar uses static data that is included with the application.
 
-### 4. Resend API Setup
+### 4. EmailJS Setup
 
-#### Create Resend Account
-1. Go to [Resend](https://resend.com/)
-2. Create an account and verify your email
-3. Go to API Keys and create a new API key
+#### Create EmailJS Account & Configure
+1. Go to [EmailJS](https://www.emailjs.com/)
+2. Create an account and sign in
+3. Go to **Email Services** → **Add New Service**
+4. Connect your email provider (Gmail, Outlook, etc.)
+5. Copy the **Service ID**
 
-#### Configure Domain (Important!)
-1. In Resend dashboard, go to Domains
-2. Add and verify a domain you own (or use a subdomain)
-3. The email `from` address is configured in the Vercel Function
+#### Create Email Template
+1. Go to **Email Templates** → **Create New Template**
+2. Use these template variables:
+   ```
+   {{to_email}} - Recipient email
+   {{from_name}} - "December Quest"
+   {{subject}} - Email subject
+   {{message}} - The magical message
+   {{qr_code}} - QR code URL
+   {{day}} - Day number
+   {{html}} - Full HTML content
+   ```
+3. Copy the **Template ID**
+
+#### Your Keys (Already Provided):
+- **Public Key**: `vzkwVpMTyWf-wppGa`
+- **Private Key**: `PdSJ5Wc9LopG5hEscfqy-`
 
 ### 5. Environment Configuration
 
 Create a `.env` file in the root directory:
 
 ```env
-# Email Configuration
-VITE_RESEND_API_KEY=your_resend_api_key_here
-RECIPIENT_EMAIL=kimkang2355@gmail.com
+# EmailJS Configuration - REQUIRED
+EMAILJS_SERVICE_ID=your_service_id_from_emailjs
+EMAILJS_TEMPLATE_ID=your_template_id_from_emailjs
+EMAILJS_PUBLIC_KEY=vzkwVpMTyWf-wppGa
+EMAILJS_PRIVATE_KEY=PdSJ5Wc9LopG5hEscfqy-
+
+# Recipient Email
+RECIPIENT_EMAIL=aleksandarmiloseski96@gmail.com
 
 # App URL for QR code generation (use your deployed URL)
 VITE_APP_URL=https://your-advent-app.vercel.app
