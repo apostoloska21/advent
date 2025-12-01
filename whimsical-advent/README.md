@@ -20,10 +20,10 @@ A personalized, interactive advent-style web application that delivers daily mag
 - **React Query** for data fetching
 
 ### Backend & Infrastructure
-- **PostgreSQL** with **Drizzle ORM** for database
 - **Vercel Functions** (Node.js) for serverless API
 - **Resend API** for email delivery
 - **QR Code generation** via API
+- **Static data** for advent content
 
 ## 🚀 Quick Setup
 
@@ -45,33 +45,9 @@ cd "/Users/martina/Documents/project ideas/whimsical/whimsical-advent"
 npm install
 ```
 
-### 3. PostgreSQL Database Setup
+### 3. Static Data Setup
 
-#### Option A: Local PostgreSQL
-
-1. **Install PostgreSQL**:
-   ```bash
-   # macOS with Homebrew
-   brew install postgresql
-   brew services start postgresql
-
-   # Ubuntu/Debian
-   sudo apt-get install postgresql postgresql-contrib
-   sudo systemctl start postgresql
-   ```
-
-2. **Create the database**:
-   ```bash
-   npm run db:setup
-   npm run db:migrate
-   ```
-
-#### Option B: Cloud PostgreSQL (Recommended for Production)
-
-Use services like:
-- [Supabase](https://supabase.com)
-- [Neon](https://neon.tech)
-- [Railway](https://railway.app)
+No database setup required! The advent calendar uses static data that is included with the application.
 
 ### 4. Resend API Setup
 
@@ -90,13 +66,6 @@ Use services like:
 Create a `.env` file in the root directory:
 
 ```env
-# Database Configuration
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_USER=postgres
-DATABASE_PASSWORD=postgres
-DATABASE_NAME=whimsical_advent
-
 # Email Configuration
 VITE_RESEND_API_KEY=your_resend_api_key_here
 RECIPIENT_EMAIL=kimkang2355@gmail.com
@@ -128,13 +97,6 @@ npm run dev
 
 2. **Environment Variables** (in Vercel dashboard):
    ```
-   # Database
-   DATABASE_HOST=your_db_host
-   DATABASE_PORT=5432
-   DATABASE_USER=your_db_user
-   DATABASE_PASSWORD=your_db_password
-   DATABASE_NAME=your_db_name
-
    # Email
    VITE_RESEND_API_KEY=your_resend_api_key
    RECIPIENT_EMAIL=kimkang2355@gmail.com
@@ -231,34 +193,21 @@ npm run build
 npm run preview
 ```
 
-## 📊 Database Schema
+## 📊 Data Structure
 
-### Tables
+### Static Advent Data
 
-#### `advent_days`
-```sql
-CREATE TABLE advent_days (
-  id SERIAL PRIMARY KEY,
-  day INTEGER NOT NULL UNIQUE,
-  message TEXT NOT NULL,
-  clue TEXT NOT NULL,
-  is_active BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-```
+The advent calendar uses static data stored in `src/data/seedData.ts`:
 
-#### `email_logs`
-```sql
-CREATE TABLE email_logs (
-  id SERIAL PRIMARY KEY,
-  day_id TEXT NOT NULL,
-  recipient_email TEXT NOT NULL,
-  sent_at TIMESTAMP DEFAULT NOW(),
-  status TEXT NOT NULL,
-  qr_code_url TEXT NOT NULL,
-  error_message TEXT
-);
+```typescript
+export const adventDaysData: AdventDayData[] = [
+  {
+    day: 1,
+    message: "🌟 Dear wandering soul...",
+    clue: "Seek the warmth where morning light first dances..."
+  },
+  // ... 31 days of magical content
+];
 ```
 
 ## 🎨 Design Philosophy
@@ -273,9 +222,8 @@ CREATE TABLE email_logs (
 ### Common Issues
 
 1. **Emails not sending**: Check Vercel function logs and Resend API key
-2. **Database connection**: Verify PostgreSQL credentials and connection
-3. **Days not unlocking**: Check system date and timezone settings
-4. **Styling issues**: Ensure TailwindCSS is properly configured
+2. **Days not unlocking**: Check system date and timezone settings
+3. **Styling issues**: Ensure TailwindCSS is properly configured
 
 ### Debug Commands
 
@@ -283,12 +231,8 @@ CREATE TABLE email_logs (
 # Check Vercel function logs
 # Go to Vercel dashboard > Functions tab
 
-# Test database connection locally
-npm run db:setup
-npm run db:migrate
-
-# Check database data
-# Use your PostgreSQL client or pgAdmin
+# Check static data
+# View src/data/seedData.ts for advent content
 ```
 
 ## 🌟 Future Enhancements

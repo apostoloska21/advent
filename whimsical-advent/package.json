@@ -7,10 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx migrate.ts",
-    "db:setup": "tsx setup-db.ts"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
@@ -21,12 +18,9 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "drizzle-kit": "^0.31.7",
-    "drizzle-orm": "^0.44.7",
     "firebase": "^12.6.0",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.555.0",
-    "pg": "^8.16.3",
     "qrcode": "^1.5.3",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
@@ -38,7 +32,6 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/node": "^24.10.1",
-    "@types/pg": "^8.15.6",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",

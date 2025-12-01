@@ -1,29 +1,17 @@
-// API-based database operations (client-side safe)
+// Static data-based operations (no database)
+
+import { adventDaysData } from '@/data/seedData';
 
 export interface AdventDay {
-  id: number;
   day: number;
   message: string;
   clue: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
-// Days operations
+// Days operations using static data
 export const getDay = async (dayId: number): Promise<AdventDay | null> => {
-  try {
-    const response = await fetch(`/api/days?day=${dayId}`);
-    if (!response.ok) {
-      if (response.status === 404) return null;
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data.day || null;
-  } catch (error) {
-    console.error('Error fetching day:', error);
-    return null;
-  }
+  const day = adventDaysData.find(d => d.day === dayId);
+  return day || null;
 };
 
 export const getDayByNumber = async (dayNumber: number): Promise<AdventDay | null> => {
@@ -31,21 +19,10 @@ export const getDayByNumber = async (dayNumber: number): Promise<AdventDay | nul
 };
 
 export const getAllDays = async (): Promise<AdventDay[]> => {
-  try {
-    const response = await fetch('/api/days');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data.days || [];
-  } catch (error) {
-    console.error('Error fetching all days:', error);
-    return [];
-  }
+  return adventDaysData;
 };
 
-// Database initialization is now handled by API routes
+// No database initialization needed
 export const initializeDatabase = async () => {
-  console.log('🔍 Database initialization handled by API routes');
-  // The API routes will handle seeding automatically
+  console.log('📊 Using static data - no database needed');
 };

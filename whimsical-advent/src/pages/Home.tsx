@@ -3,11 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Calendar, Heart, Eye, Gift, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { getAllDays } from '@/services/database';
 
 const Home = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const currentDate = new Date();
   const currentDay = currentDate.getDate();
   const currentMonth = currentDate.getMonth() + 1;
@@ -166,7 +166,7 @@ const Home = () => {
                           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                             {accessibleDays.map((day, index) => (
                               <motion.div
-                                key={day.id}
+                                key={day.day}
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ delay: 1.2 + index * 0.1, duration: 0.4 }}
