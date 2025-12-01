@@ -1,6 +1,39 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import * as QRCode from 'qrcode';
-import adventDaysData from '../src/assets/data.json';
+
+// Advent days data (inline to avoid import issues in Vercel)
+const adventDaysData = [
+  { day: 1, message: "A gentle sparkle marks the beginning of your December quest.", clue: "Look where mornings usually begin." },
+  { day: 2, message: "Magic grows stronger today—follow the whispering lights.", clue: "Search somewhere warm and cozy." },
+  { day: 3, message: "A soft glow leads you closer to hidden wonders.", clue: "Check a place where you keep your favorite snacks." },
+  { day: 4, message: "The magic hums softly today, waiting to be found.", clue: "Look near your phone chargers." },
+  { day: 5, message: "A shimmering trail appears only for the brave.", clue: "Search a pocket of your jacket." },
+  { day: 6, message: "The air tingles with quiet enchantment.", clue: "Look under your pillow." },
+  { day: 7, message: "Today feels like a good day for a small discovery.", clue: "Check inside your favorite shoes." },
+  { day: 8, message: "Magic circles around you like a warm breeze.", clue: "Search inside your backpack." },
+  { day: 9, message: "A faint glow dances at the corner of your vision.", clue: "Look inside the cutlery drawer." },
+  { day: 10, message: "Your quest deepens with quiet courage.", clue: "Search near your computer keyboard." },
+  { day: 11, message: "A warm spark reminds you of love and little surprises.", clue: "Check behind your mirror." },
+  { day: 12, message: "Mid-December magic glows softly today.", clue: "Look inside your wardrobe." },
+  { day: 13, message: "A playful sparkle skips ahead of you.", clue: "Check the fridge door shelves." },
+  { day: 14, message: "The magic is preparing something sweet.", clue: "Look near your favorite mug." },
+  { day: 15, message: "You are halfway through the enchanted journey.", clue: "Check your coat hanger." },
+  { day: 16, message: "The magic hums like a lullaby today.", clue: "Look inside the bathroom drawer." },
+  { day: 17, message: "A spark of adventure lights up the evening.", clue: "Check your bedside table." },
+  { day: 18, message: "The winds of December whisper your name.", clue: "Look under the couch cushions." },
+  { day: 19, message: "A soft glow guides you through the cold.", clue: "Check inside the oven (while it's off!)." },
+  { day: 20, message: "Magic curls around you like a winter scarf.", clue: "Look near your skincare products." },
+  { day: 21, message: "The solstice energy brings powerful magic.", clue: "Check behind your TV." },
+  { day: 22, message: "A soft jingle hints at today's treasure.", clue: "Look near your headphones." },
+  { day: 23, message: "The air sparkles—something exciting is near.", clue: "Check your bag or purse." },
+  { day: 24, message: "Christmas Eve glimmers with enchantment.", clue: "Look near your favorite candle." },
+  { day: 25, message: "A day full of warmth, magic, and love.", clue: "Check under the Christmas tree." },
+  { day: 26, message: "The magic isn't done yet… a new trail appears.", clue: "Look near your laptop charger." },
+  { day: 27, message: "A soft shimmer says hello this morning.", clue: "Check inside a book you love." },
+  { day: 28, message: "Magic lingers like a warm memory.", clue: "Look inside a kitchen cabinet." },
+  { day: 29, message: "A glowing spark follows you gently.", clue: "Check your drawer of socks." },
+  { day: 30, message: "The year's magic gathers in one last swirl.", clue: "Look near your perfumes or colognes." },
+  { day: 31, message: "A final whisper of wonder closes your December quest.", clue: "Check where you keep your notebooks." }
+];
 
 // EmailJS configuration (same as test-email.js)
 const EMAILJS_SERVICE_ID = process.env.EMAILJS_SERVICE_ID || 'service_xvvuuis';
@@ -9,10 +42,11 @@ const EMAILJS_PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY || 'vzkwVpMTyWf-wppGa'
 const EMAILJS_PRIVATE_KEY = process.env.EMAILJS_PRIVATE_KEY || 'PdSJ5Wc9LopG5hEscfqy-';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Allow GET requests for manual testing, POST for cron jobs
-  if (req.method !== 'POST' && req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  try {
+    // Allow GET requests for manual testing, POST for cron jobs
+    if (req.method !== 'POST' && req.method !== 'GET') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
 
   // Handle GET requests for testing
   if (req.method === 'GET') {
@@ -21,17 +55,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.log('🧪 Manual email test initiated via GET request');
       // Continue with the normal flow but force the test day
     } else {
-      // Test QR code URL generation
+      // Test URL generation
       const testDay = req.query.day ? parseInt(req.query.day as string) : 1;
-      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5174';
-      const testQrUrl = `${baseUrl}/day/${testDay}`;
+      const baseUrl = process.env.VERCEL_URL 
+        ? `https://${process.env.VERCEL_URL}` 
+        : 'https://advent-eta.vercel.app/';
+      const testDayUrl = `${baseUrl}/day/${testDay}`;
 
       return res.status(200).json({
         message: 'Email API is working!',
-        qrCodeTest: {
+        urlTest: {
           day: testDay,
-          generatedUrl: testQrUrl,
-          qrCodeApiUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(testQrUrl)}`
+          websiteUrl: baseUrl,
+          dayUrl: testDayUrl
         },
         testing: {
           checkStatus: 'GET /api/send-daily-email',
@@ -57,8 +93,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // For manual testing, allow overriding the day
   const testDay = req.query.day ? parseInt(req.query.day as string) : null;
 
-  try {
-    console.log('🎄 Starting daily advent email job...');
+  console.log('🎄 Starting daily advent email job...');
 
     // Get current date or use test day
     const now = new Date();
@@ -85,6 +120,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Get the advent day data from static data
     console.log(`🔍 Looking for day ${currentDay} in static data...`);
+    console.log(`📊 Advent days data loaded: ${adventDaysData ? adventDaysData.length : 0} days`);
+    
+    if (!adventDaysData || adventDaysData.length === 0) {
+      console.error('❌ Advent days data not loaded!');
+      return res.status(500).json({ error: 'Advent days data not available' });
+    }
+    
     const dayData = adventDaysData.find(day => day.day === currentDay);
 
     if (!dayData) {
@@ -104,30 +146,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     console.log(`📧 Sending email to: ${recipientEmail}`);
 
-    // Generate QR code - ensure it points to the deployed website
+    // Get website URLs
     const baseUrl = process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}` 
-      : 'https://whimsical-advent-pqohzvhgm-martinas-projects-fc021299.vercel.app';
+      : 'https://advent-eta.vercel.app/';
     const dayUrl = `${baseUrl}/day/${currentDay}`;
-    console.log(`🔗 QR Code will link to: ${dayUrl}`);
-    console.log(`🌐 Base URL used: ${baseUrl}`);
-    console.log(`📅 Day URL: /day/${currentDay}`);
-
-    // Generate QR code as data URL
-    console.log('🖼️ Generating QR code...');
-    const qrCodeDataUrl = await QRCode.toDataURL(dayUrl, {
-      width: 300,
-      margin: 2,
-      color: {
-        dark: '#2D3748',
-        light: '#FFFFFF'
-      }
-    });
-    console.log('✅ QR code generated successfully');
-
-    // Send email using EmailJS
-    console.log('📤 Preparing email...');
-    const emailHtml = generateEmailHtml(currentDay, qrCodeDataUrl, dayData.message);
+    console.log(`🌐 Base URL: ${baseUrl}`);
+    console.log(`📅 Day URL: ${dayUrl}`);
 
     console.log('📨 Sending email via EmailJS...');
 
@@ -148,9 +173,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         message_with_link: messageWithLink,
         clue: dayData.clue,
         website_url: websiteUrl,
-        day_url: dayPageUrl,
-        qr_code: qrCodeDataUrl,
-        html: emailHtml
+        day_url: dayPageUrl
       };
 
       const requestBody = {
@@ -205,118 +228,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
   } catch (error) {
-    console.error('❌ Error in sendDailyAdventEmail function:', error);
+    // Catch any errors during initialization or early execution (GET requests, etc.)
+    console.error('❌ Fatal error in email handler:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return res.status(500).json({
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: 'Server error occurred',
+      details: error instanceof Error ? error.message : 'Unknown error',
+      type: 'FUNCTION_INVOCATION_FAILED'
     });
   }
 }
 
-function generateEmailHtml(day: number, qrCodeUrl: string, message: string): string {
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Your December ${day} Magical Quest</title>
-        <style>
-          body {
-            font-family: 'Georgia', serif;
-            line-height: 1.6;
-            color: #2d3748;
-            max-width: 600px;
-            margin: 0 auto;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-          }
-          .container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-          }
-          .header {
-            text-align: center;
-            margin-bottom: 30px;
-          }
-          .magical-title {
-            font-size: 28px;
-            color: #4a5568;
-            margin-bottom: 10px;
-            font-weight: bold;
-          }
-          .day-indicator {
-            font-size: 18px;
-            color: #718096;
-            margin-bottom: 20px;
-          }
-          .message {
-            font-size: 16px;
-            color: #2d3748;
-            margin-bottom: 30px;
-            line-height: 1.8;
-          }
-          .qr-section {
-            text-align: center;
-            margin: 30px 0;
-          }
-          .qr-instructions {
-            font-size: 14px;
-            color: #718096;
-            margin-bottom: 20px;
-            font-style: italic;
-          }
-          .qr-code {
-            max-width: 200px;
-            height: auto;
-            border-radius: 10px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-          }
-          .footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e2e8f0;
-            font-size: 12px;
-            color: #a0aec0;
-          }
-          .sparkles {
-            color: #ffd700;
-            font-size: 20px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <div class="sparkles">✨🌟✨</div>
-            <h1 class="magical-title">December ${day} Quest</h1>
-            <div class="day-indicator">Day ${day} of Your Magical Adventure</div>
-          </div>
-
-          <div class="message">
-            ${message}
-          </div>
-
-          <div class="qr-section">
-            <p class="qr-instructions">
-              Scan this enchanted QR code to unlock today's magical revelation:
-            </p>
-            <img
-              src="${qrCodeUrl}"
-              alt="QR Code for Day ${day}"
-              class="qr-code"
-            />
-          </div>
-
-          <div class="footer">
-            <p>This magical quest is brought to you by the December spirits ✨</p>
-            <p>May your journey be filled with wonder and delight</p>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
-}
