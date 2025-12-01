@@ -53,8 +53,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.log('🧪 Manual email test initiated via GET request');
       // Continue with the normal flow but force the test day
     } else {
+      // Test QR code URL generation
+      const testDay = req.query.day ? parseInt(req.query.day as string) : 1;
+      const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5174';
+      const testQrUrl = `${baseUrl}/day/${testDay}`;
+
       return res.status(200).json({
-        message: 'Email API is working! Use POST to send emails.',
+        message: 'Email API is working!',
+        qrCodeTest: {
+          day: testDay,
+          generatedUrl: testQrUrl,
+          qrCodeApiUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(testQrUrl)}`
+        },
         testing: {
           checkStatus: 'GET /api/send-daily-email',
           sendTestEmail: 'GET /api/send-daily-email?test=true&day=1',
@@ -65,7 +75,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           status: {
             hasResendKey: !!(process.env.VITE_RESEND_API_KEY || process.env.RESEND_API_KEY),
             hasRecipientEmail: !!(process.env.RECIPIENT_EMAIL || process.env.VITE_RECIPIENT_EMAIL),
-            hasVercelUrl: !!process.env.VERCEL_URL
+            hasVercelUrl: !!process.env.VERCEL_URL,
+            baseUrl: baseUrl
           }
         },
         currentTime: new Date().toISOString(),
@@ -125,10 +136,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     console.log(`📧 Sending email to: ${recipientEmail}`);
 
-    // Generate QR code
+    // Generate QR code - ensure it points to the deployed website
     const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5174';
     const dayUrl = `${baseUrl}/day/${currentDay}`;
-    console.log(`🔗 Generated URL for day ${currentDay}: ${dayUrl}`);
+    console.log(`🔗 QR Code will link to: ${dayUrl}`);
+    console.log(`🌐 Base URL used: ${baseUrl}`);
+    console.log(`📅 Day URL: /day/${currentDay}`);
 
     // Generate QR code as data URL
     console.log('🖼️ Generating QR code...');

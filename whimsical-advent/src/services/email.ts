@@ -147,9 +147,24 @@ export const sendDailyAdventEmail = async (emailData: EmailData) => {
   }
 };
 
-export const generateQRCodeUrl = (day: number, baseUrl: string = window.location.origin): string => {
-  const dayUrl = `${baseUrl}/day/${day}`;
-  // For now, return a placeholder. In production, you'd generate actual QR codes
-  // This could be done with a service like QR Code Monkey API or similar
-  return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(dayUrl)}`;
+export const generateQRCodeUrl = (day: number, baseUrl?: string): string => {
+  // Use provided baseUrl, or try to determine the correct URL
+  let finalBaseUrl = baseUrl;
+
+  if (!finalBaseUrl) {
+    // For client-side, use window.location.origin if available
+    if (typeof window !== 'undefined' && window.location) {
+      finalBaseUrl = window.location.origin;
+    } else {
+      // Fallback for server-side or when window is not available
+      // Use environment variable if available, otherwise use a placeholder
+      finalBaseUrl = import.meta.env.VITE_APP_URL || 'https://your-advent-app.vercel.app';
+    }
+  }
+
+  const dayUrl = `${finalBaseUrl}/day/${day}`;
+  console.log(`🔗 Generating QR code URL for day ${day}: ${dayUrl}`);
+
+  // Generate QR code using qr-server API
+  return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(dayUrl)}`;
 };

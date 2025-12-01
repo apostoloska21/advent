@@ -70,7 +70,10 @@ Create a `.env` file in the root directory:
 VITE_RESEND_API_KEY=your_resend_api_key_here
 RECIPIENT_EMAIL=kimkang2355@gmail.com
 
-# Vercel (for production)
+# App URL for QR code generation (use your deployed URL)
+VITE_APP_URL=https://your-advent-app.vercel.app
+
+# Vercel (auto-set in production)
 VERCEL_URL=https://your-app.vercel.app
 ```
 
