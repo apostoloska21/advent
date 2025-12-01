@@ -105,7 +105,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log(`📧 Sending email to: ${recipientEmail}`);
 
     // Generate QR code - ensure it points to the deployed website
-    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5174';
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : 'https://whimsical-advent-pqohzvhgm-martinas-projects-fc021299.vercel.app';
     const dayUrl = `${baseUrl}/day/${currentDay}`;
     console.log(`🔗 QR Code will link to: ${dayUrl}`);
     console.log(`🌐 Base URL used: ${baseUrl}`);
@@ -131,13 +133,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
       // EmailJS server-side sending using REST API
+      const websiteUrl = baseUrl;
+      const dayPageUrl = dayUrl;
+      
+      // Format message with link included
+      const messageWithLink = `${dayData.message}\n\n🔗 Visit your quest: ${websiteUrl}\n📅 Today's quest: ${dayPageUrl}`;
+      
       const templateParams = {
         to_email: recipientEmail,
         from_name: 'December Quest',
-        subject: `🌟 Your December ${currentDay} Magical Quest Awaits!`,
-        message: dayData.message,
-        qr_code: qrCodeDataUrl,
+        subject: `Day ${currentDay} - December Quest`,
         day: currentDay.toString(),
+        message: dayData.message,
+        message_with_link: messageWithLink,
+        clue: dayData.clue,
+        website_url: websiteUrl,
+        day_url: dayPageUrl,
+        qr_code: qrCodeDataUrl,
         html: emailHtml
       };
 
