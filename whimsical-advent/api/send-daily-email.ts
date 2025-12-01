@@ -45,8 +45,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // Allow GET requests for manual testing, POST for cron jobs
     if (req.method !== 'POST' && req.method !== 'GET') {
-      return res.status(405).json({ error: 'Method not allowed' });
-    }
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   // Handle GET requests for testing
   if (req.method === 'GET') {
@@ -105,7 +105,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // For manual testing, allow overriding the day
   const testDay = req.query.day ? parseInt(req.query.day as string) : null;
 
-  console.log('🎄 Starting daily advent email job...');
+    console.log('🎄 Starting daily advent email job...');
 
     // Get current date or use test day
     const now = new Date();
@@ -225,14 +225,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const result = await response.text();
-      console.log(`✅ Successfully sent advent email for day ${currentDay} to ${recipientEmail}`);
+    console.log(`✅ Successfully sent advent email for day ${currentDay} to ${recipientEmail}`);
       console.log('EmailJS result:', result);
 
-      return res.status(200).json({
-        success: true,
+    return res.status(200).json({
+      success: true,
         emailId: result || 'sent',
-        message: `Email sent for day ${currentDay}`
-      });
+      message: `Email sent for day ${currentDay}`
+    });
 
     } catch (error) {
       console.error('❌ Error sending email via EmailJS:', error);

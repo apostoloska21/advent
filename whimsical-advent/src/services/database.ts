@@ -6,7 +6,7 @@ export interface AdventDay {
   day: number;
   message: string;
   clue: string;
-}
+  }
 
 // Days operations using JSON data
 export const getDay = async (dayId: number): Promise<AdventDay | null> => {
