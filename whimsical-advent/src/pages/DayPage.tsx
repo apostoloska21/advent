@@ -4,8 +4,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getDayByNumber } from '@/services/database';
-import { generateQRCodeUrl } from '@/services/email';
-import { ArrowLeft, Sparkles, MapPin, Gift, QrCode } from 'lucide-react';
+import { ArrowLeft, Sparkles, MapPin, Gift } from 'lucide-react';
 
 const DayPage = () => {
   const { dayNumber } = useParams<{ dayNumber: string }>();
@@ -219,29 +218,6 @@ const DayPage = () => {
                   <p className="text-white/90 leading-relaxed text-lg font-medium">
                     {adventDay.clue}
                   </p>
-                </div>
-              </motion.div>
-
-              {/* QR Code Section */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.6 }}
-                className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg p-6 border border-white/10"
-              >
-                <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
-                  <QrCode className="w-5 h-5 mr-2 text-cyan-400" />
-                  Enchanted QR Code
-                </h3>
-                <p className="text-white/80 mb-4 text-sm">
-                  This is the magical QR code that appears in today's email. Scan it to unlock this page!
-                </p>
-                <div className="flex justify-center">
-                  <img
-                    src={generateQRCodeUrl(adventDay.day)}
-                    alt={`QR Code for Day ${adventDay.day}`}
-                    className="max-w-48 h-auto rounded-lg border-2 border-white/20 shadow-lg"
-                  />
                 </div>
               </motion.div>
 

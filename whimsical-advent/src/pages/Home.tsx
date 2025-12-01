@@ -84,8 +84,8 @@ const Home = () => {
 
                   <p className="text-lg text-white/90 leading-relaxed mb-6">
                     The ancient December spirits have prepared a magical quest just for you.
-                    Each morning, a mysterious email will arrive with an enchanted QR code
-                    that unlocks today's hidden treasure.
+                    Each morning, a mysterious email will arrive with today's quest
+                    that unlocks hidden treasures.
                   </p>
 
                   <div className="bg-white/5 rounded-lg p-4 mb-6 border border-white/10">
@@ -123,15 +123,6 @@ const Home = () => {
                       <div className="text-2xl mb-2">📧</div>
                       <h3 className="text-lg font-semibold text-white mb-2">Daily Emails</h3>
                       <p className="text-sm text-white/70">Receive magical messages every morning</p>
-                    </motion.div>
-
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      className="text-center p-4 bg-white/5 rounded-lg backdrop-blur-sm"
-                    >
-                      <div className="text-2xl mb-2">🔮</div>
-                      <h3 className="text-lg font-semibold text-white mb-2">QR Codes</h3>
-                      <p className="text-sm text-white/70">Scan to unlock daily revelations</p>
                     </motion.div>
 
                     <motion.div

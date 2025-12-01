@@ -81,6 +81,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             hasRecipientEmail: !!(process.env.RECIPIENT_EMAIL || process.env.VITE_RECIPIENT_EMAIL),
             hasVercelUrl: !!process.env.VERCEL_URL,
             baseUrl: baseUrl
+          },
+          emailjsConfig: {
+            serviceId: EMAILJS_SERVICE_ID,
+            templateId: EMAILJS_TEMPLATE_ID,
+            publicKey: EMAILJS_PUBLIC_KEY.substring(0, 8) + '...',
+            hasPrivateKey: !!EMAILJS_PRIVATE_KEY,
+            usingEnvVars: {
+              serviceId: !!process.env.EMAILJS_SERVICE_ID,
+              templateId: !!process.env.EMAILJS_TEMPLATE_ID,
+              publicKey: !!process.env.EMAILJS_PUBLIC_KEY,
+              privateKey: !!process.env.EMAILJS_PRIVATE_KEY
+            }
           }
         },
         currentTime: new Date().toISOString(),
@@ -203,6 +215,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const errorText = await response.text();
         console.log('❌ EmailJS API Response:', response.status, errorText);
         console.log('📨 Request Body Sent:', JSON.stringify(requestBody, null, 2));
+        console.log('🔍 Debug Info:', {
+          serviceId: EMAILJS_SERVICE_ID,
+          templateId: EMAILJS_TEMPLATE_ID,
+          publicKey: EMAILJS_PUBLIC_KEY.substring(0, 8) + '...',
+          hasPrivateKey: !!EMAILJS_PRIVATE_KEY
+        });
         throw new Error(`EmailJS API error: ${response.status} - ${errorText}`);
       }
 
