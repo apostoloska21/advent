@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getDayByNumber } from '@/services/database';
-import { ArrowLeft, Sparkles, MapPin, Gift } from 'lucide-react';
+import { generateQRCodeUrl } from '@/services/email';
+import { ArrowLeft, Sparkles, MapPin, Gift, QrCode } from 'lucide-react';
 
 const DayPage = () => {
   const { dayNumber } = useParams<{ dayNumber: string }>();
@@ -14,9 +15,16 @@ const DayPage = () => {
 
   const { data: adventDay, isLoading, error } = useQuery({
     queryKey: ['day', day],
-    queryFn: () => day ? getDayByNumber(day) : null,
+    queryFn: async () => {
+      console.log('DayPage Query - Fetching day:', day);
+      const result = day ? await getDayByNumber(day) : null;
+      console.log('DayPage Query - Result:', result);
+      return result;
+    },
     enabled: !!day && day >= 1 && day <= 31,
   });
+
+  console.log('DayPage Debug - adventDay:', adventDay, 'isLoading:', isLoading, 'error:', error);
 
   // Check if it's December and the day is valid
   const currentDate = new Date();
@@ -24,8 +32,18 @@ const DayPage = () => {
   const currentDayOfMonth = currentDate.getDate();
   const isDecember = currentMonth === 12;
 
+  // TEMPORARY: Force December mode for testing - set to false for production
+  const forceDecember = false; // Set to false to disable testing mode
+  const effectiveIsDecember = forceDecember || isDecember;
+
   // Allow access if it's December and the day is today or earlier, or if it's not December (for testing)
-  const isAccessible = !isDecember || (day && day <= currentDayOfMonth);
+  const isAccessible = !effectiveIsDecember || (day && day <= currentDayOfMonth);
+
+  console.log('DayPage Debug - Current Date:', currentDate.toISOString());
+  console.log('DayPage Debug - currentMonth:', currentMonth, 'currentDayOfMonth:', currentDayOfMonth);
+  console.log('DayPage Debug - isDecember:', isDecember);
+  console.log('DayPage Debug - requested day:', day);
+  console.log('DayPage Debug - isAccessible:', isAccessible);
 
   if (!day || day < 1 || day > 31) {
     return (
@@ -63,10 +81,22 @@ const DayPage = () => {
         <Card className="bg-white/10 backdrop-blur-lg border-white/20">
           <CardContent className="p-8 text-center">
             <h2 className="text-2xl text-white mb-4">Quest Not Found</h2>
-            <p className="text-white/80 mb-6">This day's magic hasn't been prepared yet.</p>
-            <Button onClick={() => navigate('/')} variant="outline">
-              Return Home
-            </Button>
+            <p className="text-white/80 mb-6">
+              This day's magic hasn't been prepared yet. The December spirits are still crafting today's enchantment.
+            </p>
+            <p className="text-white/60 text-sm mb-6">
+              Requested: Day {day} | Today: December {currentDayOfMonth}
+            </p>
+            <div className="space-y-3">
+              {day && day > currentDayOfMonth && effectiveIsDecember ? (
+                <p className="text-yellow-400 text-sm">
+                  ✨ This quest unlocks on December {day}
+                </p>
+              ) : null}
+              <Button onClick={() => navigate('/')} variant="outline">
+                Return Home
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -189,6 +219,29 @@ const DayPage = () => {
                   <p className="text-white/90 leading-relaxed text-lg font-medium">
                     {adventDay.clue}
                   </p>
+                </div>
+              </motion.div>
+
+              {/* QR Code Section */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.6 }}
+                className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-lg p-6 border border-white/10"
+              >
+                <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                  <QrCode className="w-5 h-5 mr-2 text-cyan-400" />
+                  Enchanted QR Code
+                </h3>
+                <p className="text-white/80 mb-4 text-sm">
+                  This is the magical QR code that appears in today's email. Scan it to unlock this page!
+                </p>
+                <div className="flex justify-center">
+                  <img
+                    src={generateQRCodeUrl(adventDay.day)}
+                    alt={`QR Code for Day ${adventDay.day}`}
+                    className="max-w-48 h-auto rounded-lg border-2 border-white/20 shadow-lg"
+                  />
                 </div>
               </motion.div>
 

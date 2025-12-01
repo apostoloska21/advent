@@ -1,5 +1,5 @@
-import { createDay } from '@/services/database';
-import { adventDaysData } from '@/data/seedData';
+import { createDay } from '../services/database';
+import { adventDaysData } from '../data/seedData';
 
 export const seedDatabase = async () => {
   console.log('🌟 Starting database seeding...');

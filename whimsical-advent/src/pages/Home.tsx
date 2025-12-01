@@ -1,8 +1,15 @@
 import { motion } from 'framer-motion';
-import { Card, CardContent } from '@/components/ui/card';
-import { Sparkles, Calendar, Heart } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Sparkles, Calendar, Heart, Eye, Gift, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getAllDays, createDay } from '@/services/database';
+import { adventDaysData } from '@/data/seedData';
 
 const Home = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const currentDate = new Date();
   const currentDay = currentDate.getDate();
   const currentMonth = currentDate.getMonth() + 1;
@@ -10,6 +17,53 @@ const Home = () => {
   // Only show advent calendar in December
   const isDecember = currentMonth === 12;
   const isValidDay = currentDay >= 1 && currentDay <= 31;
+
+  // TEMPORARY: Force December mode for testing - set to false for production
+  const forceDecember = false; // Set to false to disable testing mode
+  const effectiveIsDecember = forceDecember || isDecember;
+
+  // Get all advent days for hidden gifts section
+  const { data: allDays = [] } = useQuery({
+    queryKey: ['allDays'],
+    queryFn: getAllDays,
+    enabled: effectiveIsDecember,
+  });
+
+  // Filter accessible days (in December and up to current day, or all if not December for testing)
+  const accessibleDays = allDays.filter(day =>
+    !effectiveIsDecember || day.day <= currentDay
+  );
+
+  console.log('Home Debug - Current Date:', currentDate.toISOString());
+  console.log('Home Debug - currentDay:', currentDay, 'currentMonth:', currentMonth);
+  console.log('Home Debug - isDecember:', isDecember, 'effectiveIsDecember:', effectiveIsDecember);
+  console.log('Home Debug - allDays length:', allDays.length, 'accessibleDays length:', accessibleDays.length);
+
+  // Mutation to seed database
+  const seedMutation = useMutation({
+    mutationFn: async () => {
+      console.log('Starting database seeding...');
+      console.log('adventDaysData length:', adventDaysData.length);
+      for (const dayData of adventDaysData) {
+        console.log(`Creating day ${dayData.day}...`);
+        const result = await createDay({
+          ...dayData,
+          isActive: false
+        });
+        console.log(`Created day ${dayData.day} with ID:`, result.id);
+      }
+      console.log('Database seeding completed!');
+      return true;
+    },
+    onSuccess: () => {
+      console.log('Mutation onSuccess - invalidating cache...');
+      // Invalidate and refetch all days query
+      queryClient.invalidateQueries({ queryKey: ['allDays'] });
+    },
+    onError: (error) => {
+      console.error('Error seeding database:', error);
+    }
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -45,7 +99,40 @@ const Home = () => {
         >
           <Card className="bg-white/10 backdrop-blur-lg border-white/20 shadow-2xl">
             <CardContent className="p-8 md:p-12">
-              {isDecember && isValidDay ? (
+              {allDays.length === 0 ? (
+                <div className="text-center space-y-6">
+                  <div className="text-6xl mb-4">🌱</div>
+                  <h2 className="text-3xl font-semibold text-white mb-4">
+                    Preparing the Magical Realm
+                  </h2>
+                  <p className="text-lg text-white/90 leading-relaxed mb-6">
+                    The advent calendar needs to be seeded with magical content before we can begin our journey.
+                  </p>
+                  <div className="space-y-4">
+                    <Button
+                      onClick={() => seedMutation.mutate()}
+                      disabled={seedMutation.isPending}
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg"
+                    >
+                      {seedMutation.isPending ? '🌱 Seeding Database...' : '🌟 Seed Database'}
+                    </Button>
+
+                    {allDays.length > 0 && (
+                      <Button
+                        onClick={() => navigate('/day/1')}
+                        className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg"
+                      >
+                        🧪 Test Day 1 (Data exists: {allDays.length} days)
+                      </Button>
+                    )}
+                  </div>
+                  {seedMutation.isError && (
+                    <p className="text-red-400 text-sm mt-2">
+                      Error seeding database. Please try again.
+                    </p>
+                  )}
+                </div>
+              ) : effectiveIsDecember && isValidDay ? (
                 <div className="space-y-6">
                   <div className="flex justify-center mb-6">
                     <Calendar className="w-12 h-12 text-blue-400" />
@@ -60,6 +147,33 @@ const Home = () => {
                     Each morning, a mysterious email will arrive with an enchanted QR code
                     that unlocks today's hidden treasure.
                   </p>
+
+                  <div className="bg-white/5 rounded-lg p-4 mb-6 border border-white/10">
+                    <p className="text-white/80 text-center">
+                      <span className="text-yellow-400 font-semibold">Today is December {currentDay}</span>
+                      <br />
+                      <span className="text-sm text-white/60">Your magical revelation awaits...</span>
+                    </p>
+                  </div>
+
+                  {/* View Today's Message Button */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8, duration: 0.6 }}
+                    className="mb-6"
+                  >
+                    <Button
+                      onClick={() => navigate(`/day/${currentDay}`)}
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform hover:scale-105 transition-all duration-200"
+                    >
+                      <Eye className="w-5 h-5 mr-2" />
+                      View Today's Message (Day {currentDay})
+                    </Button>
+                    <p className="text-sm text-white/60 mt-2">
+                      Can't wait for the email? See today's magical revelation now!
+                    </p>
+                  </motion.div>
 
                   <div className="grid md:grid-cols-3 gap-6 mb-8">
                     <motion.div
@@ -90,7 +204,54 @@ const Home = () => {
                     </motion.div>
                   </div>
 
-                  <div className="text-center">
+                  {/* Hidden Gifts Section */}
+                  {accessibleDays.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1, duration: 0.6 }}
+                      className="mt-8"
+                    >
+                      <Card className="bg-white/5 backdrop-blur-sm border-white/20">
+                        <CardHeader className="text-center pb-4">
+                          <CardTitle className="text-2xl text-white flex items-center justify-center">
+                            <Gift className="w-6 h-6 mr-2 text-pink-400" />
+                            Hidden Gifts Discovered
+                          </CardTitle>
+                          <p className="text-white/70 text-sm">
+                            Magical treasures you've uncovered so far
+                          </p>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {accessibleDays.map((day, index) => (
+                              <motion.div
+                                key={day.id}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 1.2 + index * 0.1, duration: 0.4 }}
+                                className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg p-4 border border-white/10 hover:border-white/20 transition-colors cursor-pointer"
+                                onClick={() => navigate(`/day/${day.day}`)}
+                              >
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className="flex items-center text-yellow-400">
+                                    <Sparkles className="w-4 h-4 mr-1" />
+                                    <span className="font-semibold">Day {day.day}</span>
+                                  </div>
+                                  <MapPin className="w-4 h-4 text-red-400" />
+                                </div>
+                                <p className="text-white/80 text-sm leading-relaxed">
+                                  {day.clue}
+                                </p>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  )}
+
+                  <div className="text-center mt-6">
                     <p className="text-white/80 mb-4">
                       Your quest begins tomorrow. The first magical email will arrive soon...
                     </p>
