@@ -17,6 +17,10 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  // Initialize database on app startup
+  useEffect(() => {
+    initializeDatabase().catch(console.error);
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <Router>

@@ -3,9 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Calendar, Heart, Eye, Gift, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAllDays, createDay } from '@/services/database';
-import { adventDaysData } from '@/data/seedData';
+import { getAllDays } from '@/services/database';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -39,31 +37,6 @@ const Home = () => {
   console.log('Home Debug - isDecember:', isDecember, 'effectiveIsDecember:', effectiveIsDecember);
   console.log('Home Debug - allDays length:', allDays.length, 'accessibleDays length:', accessibleDays.length);
 
-  // Mutation to seed database
-  const seedMutation = useMutation({
-    mutationFn: async () => {
-      console.log('Starting database seeding...');
-      console.log('adventDaysData length:', adventDaysData.length);
-      for (const dayData of adventDaysData) {
-        console.log(`Creating day ${dayData.day}...`);
-        const result = await createDay({
-          ...dayData,
-          isActive: false
-        });
-        console.log(`Created day ${dayData.day} with ID:`, result.id);
-      }
-      console.log('Database seeding completed!');
-      return true;
-    },
-    onSuccess: () => {
-      console.log('Mutation onSuccess - invalidating cache...');
-      // Invalidate and refetch all days query
-      queryClient.invalidateQueries({ queryKey: ['allDays'] });
-    },
-    onError: (error) => {
-      console.error('Error seeding database:', error);
-    }
-  });
 
   return (
     <div className="min-h-screen flex items-center justify-center">
@@ -99,40 +72,7 @@ const Home = () => {
         >
           <Card className="bg-white/10 backdrop-blur-lg border-white/20 shadow-2xl">
             <CardContent className="p-8 md:p-12">
-              {allDays.length === 0 ? (
-                <div className="text-center space-y-6">
-                  <div className="text-6xl mb-4">🌱</div>
-                  <h2 className="text-3xl font-semibold text-white mb-4">
-                    Preparing the Magical Realm
-                  </h2>
-                  <p className="text-lg text-white/90 leading-relaxed mb-6">
-                    The advent calendar needs to be seeded with magical content before we can begin our journey.
-                  </p>
-                  <div className="space-y-4">
-                    <Button
-                      onClick={() => seedMutation.mutate()}
-                      disabled={seedMutation.isPending}
-                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg"
-                    >
-                      {seedMutation.isPending ? '🌱 Seeding Database...' : '🌟 Seed Database'}
-                    </Button>
-
-                    {allDays.length > 0 && (
-                      <Button
-                        onClick={() => navigate('/day/1')}
-                        className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg"
-                      >
-                        🧪 Test Day 1 (Data exists: {allDays.length} days)
-                      </Button>
-                    )}
-                  </div>
-                  {seedMutation.isError && (
-                    <p className="text-red-400 text-sm mt-2">
-                      Error seeding database. Please try again.
-                    </p>
-                  )}
-                </div>
-              ) : effectiveIsDecember && isValidDay ? (
+              {effectiveIsDecember && isValidDay ? (
                 <div className="space-y-6">
                   <div className="flex justify-center mb-6">
                     <Calendar className="w-12 h-12 text-blue-400" />

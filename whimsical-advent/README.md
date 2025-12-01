@@ -20,7 +20,8 @@ A personalized, interactive advent-style web application that delivers daily mag
 - **React Query** for data fetching
 
 ### Backend & Infrastructure
-- **Firebase** (Firestore + Functions + Hosting)
+- **PostgreSQL** with **Drizzle ORM** for database
+- **Vercel Functions** (Node.js) for serverless API
 - **Resend API** for email delivery
 - **QR Code generation** via API
 
@@ -44,20 +45,33 @@ cd "/Users/martina/Documents/project ideas/whimsical/whimsical-advent"
 npm install
 ```
 
-### 3. Firebase Setup
+### 3. PostgreSQL Database Setup
 
-#### Create a Firebase Project
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Create a new project (e.g., "december-quest")
-3. Enable Firestore Database
-4. Enable Firebase Functions
-5. Enable Firebase Hosting
+#### Option A: Local PostgreSQL
 
-#### Get Your Firebase Config
-1. Go to Project Settings > General
-2. Scroll to "Your apps" section
-3. Click "Add app" > Web app
-4. Copy the config object
+1. **Install PostgreSQL**:
+   ```bash
+   # macOS with Homebrew
+   brew install postgresql
+   brew services start postgresql
+
+   # Ubuntu/Debian
+   sudo apt-get install postgresql postgresql-contrib
+   sudo systemctl start postgresql
+   ```
+
+2. **Create the database**:
+   ```bash
+   npm run db:setup
+   npm run db:migrate
+   ```
+
+#### Option B: Cloud PostgreSQL (Recommended for Production)
+
+Use services like:
+- [Supabase](https://supabase.com)
+- [Neon](https://neon.tech)
+- [Railway](https://railway.app)
 
 ### 4. Resend API Setup
 
@@ -69,72 +83,82 @@ npm install
 #### Configure Domain (Important!)
 1. In Resend dashboard, go to Domains
 2. Add and verify a domain you own (or use a subdomain)
-3. Update the `from` email in the Firebase Function to use your verified domain
+3. The email `from` address is configured in the Vercel Function
 
 ### 5. Environment Configuration
 
 Create a `.env` file in the root directory:
 
 ```env
-# Firebase Configuration (from Firebase Console)
-VITE_FIREBASE_API_KEY=your_firebase_api_key_here
-VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your-project-id
-VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
+# Database Configuration
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=postgres
+DATABASE_PASSWORD=postgres
+DATABASE_NAME=whimsical_advent
 
 # Email Configuration
 VITE_RESEND_API_KEY=your_resend_api_key_here
 RECIPIENT_EMAIL=kimkang2355@gmail.com
+
+# Vercel (for production)
+VERCEL_URL=https://your-app.vercel.app
 ```
 
 **Important**: The recipient email should be the email address of the person receiving the advent calendar (your boyfriend).
 
-### 6. Deploy Firebase Functions
+### 6. Development Testing
 
 ```bash
-# Install Firebase CLI if you haven't
-npm install -g firebase-tools
+# Start development server
+npm run dev
 
-# Login to Firebase
-firebase login
-
-# Initialize Firebase in your project
-firebase init
-
-# Select: Functions, Firestore, Hosting
-# Choose your project
-# Select TypeScript for functions
-
-# Set environment variables for functions
-firebase functions:config:set \
-  resend.api_key="your_resend_api_key" \
-  advent.recipient_email="kimkang2355@gmail.com" \
-  advent.base_url="https://your-project.web.app"
-
-# Deploy functions
-firebase deploy --only functions
+# The database will be automatically seeded on first run
+# Visit http://localhost:5175 to see the app
 ```
 
-### 7. Seed the Database
+### 7. Deploy to Vercel
 
-Run the seeding script to populate Firestore with 31 days of magical content:
+#### Option A: Automatic Deployment
 
-```typescript
-// In your browser console or create a temporary script
-import { seedDatabase } from './src/scripts/seedDatabase';
-seedDatabase();
-```
+1. **Connect Repository**:
+   - Go to [vercel.com](https://vercel.com)
+   - Click "Import Project"
+   - Connect your GitHub repository
 
-### 8. Deploy the App
+2. **Environment Variables** (in Vercel dashboard):
+   ```
+   # Database
+   DATABASE_HOST=your_db_host
+   DATABASE_PORT=5432
+   DATABASE_USER=your_db_user
+   DATABASE_PASSWORD=your_db_password
+   DATABASE_NAME=your_db_name
+
+   # Email
+   VITE_RESEND_API_KEY=your_resend_api_key
+   RECIPIENT_EMAIL=kimkang2355@gmail.com
+   ```
+
+3. **Deploy**: Vercel will automatically build and deploy your app
+
+#### Option B: Manual Deployment
 
 ```bash
-# Build the app
-npm run build
+# Install Vercel CLI
+npm i -g vercel
 
-# Deploy to Firebase Hosting
-firebase deploy --only hosting
+# Deploy
+vercel
+
+# Set environment variables
+vercel env add DATABASE_HOST
+vercel env add DATABASE_PORT
+vercel env add DATABASE_USER
+vercel env add DATABASE_PASSWORD
+vercel env add DATABASE_NAME
+vercel env add VITE_RESEND_API_KEY
+vercel env add RECIPIENT_EMAIL
 ```
 
 ## 🎨 Customization
@@ -209,32 +233,32 @@ npm run preview
 
 ## 📊 Database Schema
 
-### Collections
+### Tables
 
-#### `days`
-```typescript
-{
-  id: string;
-  day: number; // 1-31
-  message: string;
-  clue: string;
-  isActive: boolean;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-}
+#### `advent_days`
+```sql
+CREATE TABLE advent_days (
+  id SERIAL PRIMARY KEY,
+  day INTEGER NOT NULL UNIQUE,
+  message TEXT NOT NULL,
+  clue TEXT NOT NULL,
+  is_active BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
 ```
 
-#### `emailLogs`
-```typescript
-{
-  id: string;
-  dayId: string;
-  recipientEmail: string;
-  sentAt: Timestamp;
-  status: 'sent' | 'failed' | 'pending';
-  qrCodeUrl: string;
-  errorMessage?: string;
-}
+#### `email_logs`
+```sql
+CREATE TABLE email_logs (
+  id SERIAL PRIMARY KEY,
+  day_id TEXT NOT NULL,
+  recipient_email TEXT NOT NULL,
+  sent_at TIMESTAMP DEFAULT NOW(),
+  status TEXT NOT NULL,
+  qr_code_url TEXT NOT NULL,
+  error_message TEXT
+);
 ```
 
 ## 🎨 Design Philosophy
@@ -248,22 +272,23 @@ npm run preview
 
 ### Common Issues
 
-1. **Emails not sending**: Check Firebase Functions logs and Resend API key
-2. **QR codes not working**: Verify the deployed URL in Firebase config
+1. **Emails not sending**: Check Vercel function logs and Resend API key
+2. **Database connection**: Verify PostgreSQL credentials and connection
 3. **Days not unlocking**: Check system date and timezone settings
 4. **Styling issues**: Ensure TailwindCSS is properly configured
 
 ### Debug Commands
 
 ```bash
-# Check Firebase functions logs
-firebase functions:log
+# Check Vercel function logs
+# Go to Vercel dashboard > Functions tab
 
-# Test functions locally
-firebase emulators:start
+# Test database connection locally
+npm run db:setup
+npm run db:migrate
 
-# Check Firestore data
-# Use Firebase Console > Firestore
+# Check database data
+# Use your PostgreSQL client or pgAdmin
 ```
 
 ## 🌟 Future Enhancements
